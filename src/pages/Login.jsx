@@ -425,6 +425,7 @@ const inputStyle = {
   fontSize: 14,
   fontFamily: "'DM Sans', sans-serif",
   outline: 'none',
+  colorScheme: 'dark',
 }
 
 const primaryBtnStyle = (loading) => ({

@@ -6,8 +6,8 @@ const db = admin.firestore();
 const OpenAI = require("openai");
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+  apiKey: functions.config().openai?.key || process.env.OPENAI_API_KEY
+})
 /* =========================
    UTILITY FUNCTIONS
 ========================= */
@@ -409,3 +409,30 @@ exports.overrideRiskLevel = functions.https.onCall(async (data, context) => {
 
   return { success: true };
 });
+/* =========================
+   AI CHATBOT
+========================= */
+exports.chat = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*')
+  res.set('Access-Control-Allow-Headers', 'Content-Type')
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('')
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  try {
+    const { messages } = req.body
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages,
+    })
+    res.json({ reply: completion.choices[0].message.content })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'OpenAI request failed' })
+  }
+})

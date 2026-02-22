@@ -451,7 +451,8 @@ body::before {
 
 input[type=range] {
   width: 100%;
-  -webkit-appearance: none;
+ -webkit-appearance: none;
+ appearance: none;
   height: 5px;
   border-radius: 10px;
   background: var(--paper-warm);
@@ -587,4 +588,13 @@ input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
   .grid-4 { grid-template-columns: 1fr 1fr; }
   .grid-3 { grid-template-columns: 1fr 1fr; }
   .grid-2 { grid-template-columns: 1fr; }
+}
+select option {
+  background-color: #161B22;
+  color: white;
+}
+
+select {
+  background-color: #161B22 !important;
+  color: white !important;
 }
