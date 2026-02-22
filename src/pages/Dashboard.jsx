@@ -287,8 +287,7 @@ function WeekChart({ entries }) {
 }
 
 export default function Dashboard() {
-  const { stabilityIndex, riskScore, riskLevel, entries, deadlines, deadlineCluster, clusterDeadlines, examMode, examsSoon, setPage } = useApp()
-
+  const { stabilityIndex, riskScore, riskLevel, entries, deadlines, deadlineCluster, clusterDeadlines, examMode, examsSoon, setPage, user } = useApp()
   const upcoming = deadlines
     .filter(d => new Date(d.date) >= new Date())
     .sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -312,7 +311,7 @@ export default function Dashboard() {
               {daysOfWeek[today.getDay()]}, {months[today.getMonth()]} {today.getDate()}
             </p>
             <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.1 }}>
-              Good morning, Alex
+            Good {today.getHours() < 12 ? 'morning' : today.getHours() < 17 ? 'afternoon' : 'evening'}, {user?.name || 'Student'}
             </h1>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>
               Your behavioral stability is being tracked continuously.
