@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 
 export default function Profile() {
-  const { stabilityIndex, riskLevel, entries } = useApp()
+  const { stabilityIndex, riskLevel, entries, user } = useApp()
   const [goals, setGoals] = useState({
     stabilityTarget: 80,
     sleepTarget: 7,
@@ -62,7 +62,8 @@ export default function Profile() {
           background: 'radial-gradient(circle, rgba(139,127,212,0.3) 0%, transparent 70%)',
         }} />
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-          <div style={{
+          
+         <div style={{
             width: 72, height: 72,
             borderRadius: 20,
             background: 'linear-gradient(135deg, #4B7FFF, #8B7FD4)',
@@ -71,13 +72,15 @@ export default function Profile() {
             fontFamily: "'Syne', sans-serif",
             color: 'white',
             flexShrink: 0,
-          }}>AK</div>
+          }}>
+            {user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : 'ST'}
+          </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 22, marginBottom: 4 }}>
-              Alex Kim
+              {user?.name || 'Student'}
             </div>
             <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>
-              3rd Year · Computer Science · University of Lagos
+              {user?.year ? `${user.year} · ` : ''}{user?.major || 'Campus Pulse'}
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 8, padding: '5px 12px', fontSize: 12 }}>

@@ -165,3 +165,102 @@ export default function ChatBot() {
     </>
   )
 }
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const OpenAI = require("openai");
+
+admin.initializeApp();
+const db = admin.firestore();
+
+const openai = new OpenAI({
+apiKey: functions.config().openai.key,
+});
+
+exports.chatbot = functions.https.onCall(async (data, context) => {
+if (!context.auth) {
+throw new functions.https.HttpsError("unauthenticated");
+}
+
+const uid = context.auth.uid;
+const userMessage = data.message;
+
+// 🔹 Get latest risk score
+const riskSnap = await db
+.collection("users")
+.doc(uid)
+.collection("riskScores")
+.orderBy("createdAt", "desc")
+.limit(1)
+.get();
+
+const riskScore = riskSnap.empty
+? 0
+: riskSnap.docs[0].data().score;
+
+const riskLevel =
+riskScore >= 0.7
+? "High"
+: riskScore >= 0.4
+? "Moderate"
+: "Low";
+
+// 🔹 Get last 4 check-ins
+const logsSnap = await db
+.collection("users")
+.doc(uid)
+.collection("dailyLogs")
+.orderBy("date", "desc")
+.limit(4)
+.get();
+
+const logs = logsSnap.docs.map(d => d.data());
+
+// 🔥 AI PROMPT (very important)
+const systemPrompt = `
+You are a calm and supportive mental health assistant for university students.
+
+Risk Level: ${riskLevel}
+Recent Logs: ${JSON.stringify(logs)}
+
+Rules:
+- Be supportive but not dramatic.
+- Do not diagnose.
+- If risk is High, encourage speaking to a counselor.
+- Offer practical coping suggestions.
+- Keep response under 150 words.
+`;
+
+const completion = await openai.chat.completions.create({
+model: "gpt-4o-mini",
+messages: [
+{ role: "system", content: systemPrompt },
+{ role: "user", content: userMessage }
+],
+temperature: 0.7,
+});
+
+const reply = completion.choices[0].message.content;
+
+// 🔹 Save to chat history
+await db
+.collection("users")
+.doc(uid)
+.collection("chats")
+.add({
+sender: "user",
+text: userMessage,
+createdAt: admin.firestore.FieldValue.serverTimestamp()
+});
+
+await db
+.collection("users")
+.doc(uid)
+.collection("chats")
+.add({
+sender: "bot",
+text: reply,
+createdAt: admin.firestore.FieldValue.serverTimestamp()
+});
+
+return { reply };
+});git
